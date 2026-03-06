@@ -7,9 +7,9 @@ A powerful Chromium-based browser extension that blocks URLs matching patterns f
 - **URL Interception**: Intercepts all browser requests and compares URLs against regular expression patterns
 - **Enable/Disable**: Toggle blocking on/off with one click
 - **Visual Status Indicators**: Toolbar icons change color to show status:
-  - 🟨 **Grey** - Extension disabled
-  - 🟩 **Green** - Extension enabled and idle
-  - 🟨 **Yellow** - Working (processing requests)
+  - 🟤 **Grey** - Extension disabled
+  - 🟢 **Green** - Extension enabled and idle
+  - 🟡 **Yellow** - Working (processing requests)
   - 🔴 **Red** - Blocked (request was blocked)
 - **Block Counter**: Tracks the number of requests blocked in the current session
 - **Local Block List**: Store your own block patterns in a local plain text file
