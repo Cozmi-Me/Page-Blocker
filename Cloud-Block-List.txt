@@ -1,0 +1,7 @@
+# URL Blocker - Cloud Block List
+# This file contains regular expression patterns, one per line.
+# Lines starting with # are comments and are ignored.
+# Empty lines are also ignored.
+
+\/qlitics.js
+

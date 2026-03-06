@@ -1,0 +1,21 @@
+# URL Blocker - Default Block List
+# This file contains regular expression patterns, one per line.
+# Lines starting with # are comments and are ignored.
+# Empty lines are also ignored.
+
+# Default advertisement blocking patterns
+ads\.example\.com
+doubleclick\.net
+google-analytics\.com
+googlesyndication\.com
+ad\.network\.com
+analytics\.google\.com
+pagead\.googlesyndication\.com
+googletagservices\.com
+
+# Optional: Add more patterns below
+# Example patterns (commented out):
+# facebook\.com\/ads
+# twitter\.com\/i\/ads
+# doubleclick\.net
+# ad\.doubleclick\.net

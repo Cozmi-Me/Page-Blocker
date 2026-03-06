@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Page Blocker</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+      min-width: 300px;
+      min-height: 150px;
+      background-color: #000;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .status {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .status.enabled {
+      color: #4CAF50;
+    }
+    .status.disabled {
+      color: #f44336;
+    }
+    .block-counter {
+      text-align: center;
+      margin: 10px 0;
+    }
+    .counter-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #f44336;
+    }
+    .counter-label {
+      font-size: 14px;
+      color: #ddd;
+    }
+    .footer {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #444;
+      font-size: 12px;
+      color: #aaa;
+    }
+    .footer a {
+      color: #2196F3;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    .footer p {
+      text-align: center;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .toggle-btn {
+      background-color: #2196F3;
+      color: white;
+    }
+    .toggle-btn:hover {
+      background-color: #1976D2;
+    }
+    .settings-btn {
+      background-color: #ddd;
+      color: #000;
+    }
+    .settings-btn:hover {
+      background-color: #ccc;
+    }
+    .separator {
+      border: none;
+      border-top: 1px solid #444;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="status disabled" id="statusText">⛔ Disabled</span>
+    <div class="buttons">
+      <button class="toggle-btn" id="toggleBtn">Enable</button>
+      <button class="settings-btn" id="settingsBtn">Settings</button>
+    </div>
+  </div>
+  <hr class="separator">
+  <div class="block-counter">
+    <div class="counter-value" id="blockCount">0</div>
+    <div class="counter-label">Requests Blocked</div>
+  </div>
+  <div class="footer">
+    <p><a href="https://github.com/Cozmi-Me/Page-Blocker" target="_blank">Page Blocker</a> | <a href="https://cozmi.me" target="_blank">Cozmi The Deity</a> | <a href="mailto:Info@Cozmi.Me">Info@Cozmi.Me</a></p>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
