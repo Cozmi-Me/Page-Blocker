@@ -4,4 +4,4 @@
 # Empty lines are also ignored.
 
 \/qlitics.js
-:\/\/scontent\.fdac.+\.fna.fbcdn.net\/v\/.+\/.+..+
+
