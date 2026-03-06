@@ -23,3 +23,8 @@ build/
 # ZIP files
 ZIP.sh
 Page-Blocker.zip
+
+# Documentation (not needed in repository)
+Project-specification.md
+README.md
+
