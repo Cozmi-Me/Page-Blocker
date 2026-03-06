@@ -20,3 +20,7 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+
+# ZIP files
+ZIP.sh
+Page-Blocker.zip
