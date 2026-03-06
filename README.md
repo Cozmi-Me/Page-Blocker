@@ -73,6 +73,8 @@ doubleclick\.net
 3. Enter the URL to your hosted block list
 4. The extension will automatically sync at the configured interval
 
+**Note:** Cloud sync may take up to 1 hour to refresh automatically. For immediate effect after changing the block list URL, click the **Sync Now** button in the Settings page.
+
 ### Viewing Block Statistics
 
 The popup shows the number of requests blocked in the current session. This counter resets when:
