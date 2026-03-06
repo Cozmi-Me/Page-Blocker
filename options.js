@@ -1,7 +1,7 @@
 // URL Blocker - Options Script
 var blockList = [];
 var enabled = true;
-var cloudSyncUrl = '';
+var cloudSyncUrl = 'https://raw.githubusercontent.com/Cozmi-Me/Page-Blocker/refs/heads/main/Cloud-Block-List.txt';
 var syncInterval = 1;
 
 document.addEventListener('DOMContentLoaded', function() {
