@@ -26,7 +26,7 @@ var defaultBlockPatterns = [
 function loadSettings() {
   chrome.storage.sync.get(['enabled', 'cloudSyncUrl', 'syncInterval'], function(result) {
     enabled = result.enabled !== undefined ? result.enabled : true;
-    cloudSyncUrl = result.cloudSyncUrl || '';
+    cloudSyncUrl = result.cloudSyncUrl || 'https://raw.githubusercontent.com/Cozmi-Me/Page-Blocker/refs/heads/main/Cloud-Block-List.txt';
     syncInterval = result.syncInterval || 1;
     
     // Load local block list
