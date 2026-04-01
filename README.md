@@ -173,3 +173,8 @@ This extension is compatible with any Chromium-based browser:
 ## License
 
 This project is provided as-is for educational and personal use.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for details about changes in each version.
+
