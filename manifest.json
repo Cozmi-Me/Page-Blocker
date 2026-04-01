@@ -1,19 +1,21 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Page Blocker",
   "version": "1.0.0",
   "description": "Block URLs matching patterns from local and cloud block lists",
   "permissions": [
     "storage",
-    "webRequest",
-    "webRequestBlocking",
-    "tabs",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "alarms"
+  ],
+  "host_permissions": [
     "<all_urls>"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "popup.html",
     "default_title": "Page Blocker",
     "default_icon": {
@@ -22,10 +24,10 @@
       "128": "icons/green-128.png"
     }
   },
-   "icons": {
-     "16": "icons/green-16.png",
-     "48": "icons/green-48.png",
-     "128": "icons/green-128.png"
-   },
-   "options_page": "options.html"
+  "icons": {
+    "16": "icons/green-16.png",
+    "48": "icons/green-48.png",
+    "128": "icons/green-128.png"
+  },
+  "options_page": "options.html"
 }

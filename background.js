@@ -1,15 +1,12 @@
-// URL Blocker - Background Page Script (Manifest V2 compatible)
-// Handles request blocking and cloud sync
+// URL Blocker - Background Service Worker (Manifest V3)
 
 var blockList = [];
 var cloudBlockList = [];
 var enabled = true;
 var cloudSyncUrl = '';
-var syncInterval = 3600000; // Default 1 hour
-var lastSyncTime = 0;
+var syncIntervalHours = 1; // Default 1 hour
 var blockCount = 0;
 
-// Default block patterns for advertisements
 var defaultBlockPatterns = [
   '# Default block patterns for advertisements',
   '# Add your own patterns below, one per line',
@@ -21,199 +18,203 @@ var defaultBlockPatterns = [
   'ad\\.network\\.com'
 ];
 
-// Load settings from storage
 function loadSettings() {
   chrome.storage.sync.get(['enabled', 'cloudSyncUrl', 'syncInterval', 'cloudBlockList', 'blockCount'], function(result) {
     enabled = result.enabled !== undefined ? result.enabled : true;
     cloudSyncUrl = result.cloudSyncUrl || '';
-    syncInterval = result.syncInterval || 3600000;
+    // options.js saves syncInterval in hours
+    syncIntervalHours = result.syncInterval || 1;
     blockCount = result.blockCount || 0;
     if (result.cloudBlockList) {
       cloudBlockList = result.cloudBlockList;
     }
     updateToolbarIcon();
+    setupAlarms();
   });
 }
 
-// Load local block list
 function loadBlockList() {
   chrome.storage.local.get(['blockList'], function(result) {
     if (result.blockList && result.blockList.length > 0) {
       blockList = result.blockList;
     } else {
-      // Initialize with default patterns
       blockList = defaultBlockPatterns.slice();
       chrome.storage.local.set({ blockList: blockList });
     }
-    console.log('URL Blocker: Loaded ' + blockList.length + ' block list patterns');
+    updateRules();
     updateToolbarIcon();
   });
 }
 
-// Parse block patterns (filter out comments and empty lines)
 function getActivePatterns(list) {
   return list.filter(function(line) {
     return line && !line.startsWith('#');
   });
 }
 
-// Check if URL matches any blocked pattern
-function isUrlBlocked(url) {
-  var patterns = getActivePatterns(blockList);
-  var cloudPatterns = getActivePatterns(cloudBlockList);
-  var allPatterns = patterns.concat(cloudPatterns);
-  
-  for (var i = 0; i < allPatterns.length; i++) {
-    var pattern = allPatterns[i];
+let updateRulesPromise = Promise.resolve();
+
+function updateRules() {
+  updateRulesPromise = updateRulesPromise.then(async () => {
     try {
-      var regex = new RegExp(pattern);
-      if (regex.test(url)) {
-        return { blocked: true, pattern: pattern };
+      const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
+      const oldRuleIds = oldRules.map(rule => rule.id);
+
+      if (!enabled) {
+        await chrome.declarativeNetRequest.updateDynamicRules({
+          removeRuleIds: oldRuleIds,
+          addRules: []
+        });
+        return;
       }
-    } catch (e) {
-      // Invalid regex, skip this pattern
+
+      var patterns = getActivePatterns(blockList);
+      var cloudPatterns = getActivePatterns(cloudBlockList);
+      var allPatterns = patterns.concat(cloudPatterns);
+      
+      // Deduplicate patterns just in case
+      allPatterns = [...new Set(allPatterns)];
+      
+      var newRules = [];
+      var currentId = 1;
+      
+      for (var i = 0; i < allPatterns.length; i++) {
+        var pattern = allPatterns[i];
+        try {
+          newRules.push({
+            id: currentId++,
+            priority: 1,
+            action: { type: 'block' },
+            condition: { regexFilter: pattern }
+          });
+        } catch (e) {
+          // Invalid regex for DNR, skip
+        }
+      }
+      
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRuleIds,
+        addRules: newRules
+      });
+    } catch (err) {
+      console.error('Error updating rules:', err);
     }
-  }
-  return { blocked: false, pattern: null };
+  });
+  return updateRulesPromise;
 }
 
-// Sync cloud block list
-function syncCloudBlockList() {
+async function syncCloudBlockList() {
   if (!cloudSyncUrl) return;
   
-  // Blink yellow to indicate sync is starting
   blinkYellowIcon();
   
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', cloudSyncUrl, true);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        var text = xhr.responseText;
-        var lines = text.split('\n').map(function(line) { return line.trim(); });
-        cloudBlockList = lines;
-        chrome.storage.sync.set({ cloudBlockList: cloudBlockList });
-        console.log('URL Blocker: Cloud block list synced successfully from ' + cloudSyncUrl);
-      } else {
-        console.log('URL Blocker: Failed to sync cloud block list, status: ' + xhr.status);
-      }
+  try {
+    const response = await fetch(cloudSyncUrl);
+    if (response.ok) {
+      const text = await response.text();
+      var lines = text.split('\n').map(function(line) { return line.trim(); });
+      cloudBlockList = lines;
+      chrome.storage.sync.set({ cloudBlockList: cloudBlockList });
+      updateRules();
+      console.log('URL Blocker: Cloud block list synced successfully');
     }
-  };
-  xhr.send();
+  } catch (e) {
+    console.error('URL Blocker: Failed to sync cloud block list', e);
+  }
 }
 
-// Update toolbar icon based on status
 function updateToolbarIcon() {
-  var now = Date.now();
-  var iconFile;
-  
-  if (!enabled) {
-    iconFile = 'grey';
-  } else {
-    iconFile = 'green';
+  var iconFile = enabled ? 'green' : 'grey';
+  if (chrome.action) {
+    chrome.action.setIcon({
+      path: {
+        16: 'icons/' + iconFile + '-16.png',
+        48: 'icons/' + iconFile + '-48.png',
+        128: 'icons/' + iconFile + '-128.png'
+      }
+    });
   }
-  
-   chrome.browserAction.setIcon({
-     path: {
-       16: 'icons/' + iconFile + '-16.png',
-       48: 'icons/' + iconFile + '-48.png',
-       128: 'icons/' + iconFile + '-128.png'
-     }
-   });
 }
 
-// Blink red icon for blocking action
 function blinkRedIcon() {
-  chrome.browserAction.setIcon({
-    path: {
-      16: 'icons/red-16.png',
-      48: 'icons/red-48.png',
-      128: 'icons/red-128.png'
-    }
-  });
-  setTimeout(function() {
-    updateToolbarIcon();
-  }, 250);
-}
-
-// Blink yellow icon for sync operations
-function blinkYellowIcon() {
-  chrome.browserAction.setIcon({
-    path: {
-      16: 'icons/yellow-16.png',
-      48: 'icons/yellow-48.png',
-      128: 'icons/yellow-128.png'
-    }
-  });
-  setTimeout(function() {
-    updateToolbarIcon();
-  }, 250);
-}
-
-// Block request
-function blockRequest(details) {
-  if (!enabled) return { cancel: false };
-  
-  var result = isUrlBlocked(details.url);
-  if (result.blocked) {
-    blockCount++;
-    lastSyncTime = Date.now();
-    // Persist block count to storage
-    chrome.storage.sync.set({ blockCount: blockCount });
-    // Blink red to indicate blocking action
-    blinkRedIcon();
-    console.log('URL Blocker: Blocked "' + details.url + '" matching pattern "' + result.pattern + '"');
-    return { cancel: true };
+  if (chrome.action) {
+    chrome.action.setIcon({
+      path: {
+        16: 'icons/red-16.png',
+        48: 'icons/red-48.png',
+        128: 'icons/red-128.png'
+      }
+    });
+    setTimeout(updateToolbarIcon, 250);
   }
-  
-  return { cancel: false };
 }
 
-// Set up request listener
-chrome.webRequest.onBeforeRequest.addListener(
-  blockRequest,
-  { urls: ['<all_urls>'] },
-  ['blocking']
-);
+function blinkYellowIcon() {
+  if (chrome.action) {
+    chrome.action.setIcon({
+      path: {
+        16: 'icons/yellow-16.png',
+        48: 'icons/yellow-48.png',
+        128: 'icons/yellow-128.png'
+      }
+    });
+    setTimeout(updateToolbarIcon, 250);
+  }
+}
 
-// Handle storage changes
+function setupAlarms() {
+  chrome.alarms.clear('syncAlarm', () => {
+    if (cloudSyncUrl) {
+      let intervalInMinutes = syncIntervalHours * 60;
+      if (intervalInMinutes < 1) intervalInMinutes = 1;
+      chrome.alarms.create('syncAlarm', { periodInMinutes: intervalInMinutes });
+    }
+  });
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'syncAlarm') {
+    syncCloudBlockList();
+  }
+});
+
 chrome.storage.onChanged.addListener(function(changes, namespace) {
   if (namespace === 'sync') {
     if (changes.enabled) {
       enabled = changes.enabled.newValue;
       updateToolbarIcon();
+      updateRules();
     }
     if (changes.cloudSyncUrl) {
       cloudSyncUrl = changes.cloudSyncUrl.newValue;
+      setupAlarms();
     }
     if (changes.syncInterval) {
-      syncInterval = changes.syncInterval.newValue;
+      syncIntervalHours = changes.syncInterval.newValue;
+      setupAlarms();
     }
     if (changes.cloudBlockList) {
       cloudBlockList = changes.cloudBlockList.newValue;
-      console.log('URL Blocker: Cloud block list updated from sync storage');
+      updateRules();
     }
   } else if (namespace === 'local') {
     if (changes.blockList) {
       blockList = changes.blockList.newValue;
-      console.log('URL Blocker: Local block list updated with ' + blockList.length + ' patterns');
+      updateRules();
     }
   }
 });
 
+// Update block count if debugging is possible, otherwise we just keep rules active
+if (chrome.declarativeNetRequest.onRuleMatchedDebug) {
+  chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
+    blockCount++;
+    chrome.storage.sync.set({ blockCount: blockCount });
+    blinkRedIcon();
+  });
+}
+
 // Initialize
 loadSettings();
 loadBlockList();
-
-// Log initialization
-console.log('URL Blocker: Extension initialized. Enabled: ' + enabled);
-
-// Sync cloud block list periodically
-setInterval(function() {
-  if (cloudSyncUrl) {
-    syncCloudBlockList();
-  }
-}, syncInterval);
-
-// Initial sync
 syncCloudBlockList();
