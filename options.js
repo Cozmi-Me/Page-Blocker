@@ -79,7 +79,7 @@ function saveSettings() {
       showSyncStatus('Settings saved successfully!', 'success');
       
       // Blink yellow to indicate settings update
-      chrome.browserAction.setIcon({
+      chrome.action.setIcon({
         path: {
           16: 'icons/yellow-16.png',
           48: 'icons/yellow-48.png',
@@ -87,7 +87,7 @@ function saveSettings() {
         }
       });
       setTimeout(function() {
-        chrome.browserAction.setIcon({
+        chrome.action.setIcon({
           path: {
             16: 'icons/green-16.png',
             48: 'icons/green-48.png',
@@ -121,7 +121,7 @@ function syncNow() {
   }
   
   // Blink yellow icon to indicate sync is starting
-  chrome.browserAction.setIcon({
+  chrome.action.setIcon({
     path: {
       16: 'icons/yellow-16.png',
       48: 'icons/yellow-48.png',
@@ -148,7 +148,7 @@ function syncNow() {
           showSyncStatus('Cloud block list synced successfully!', 'success');
           // Restore icon after blink
           setTimeout(function() {
-            chrome.browserAction.setIcon({
+            chrome.action.setIcon({
               path: {
                 16: 'icons/green-16.png',
                 48: 'icons/green-48.png',
