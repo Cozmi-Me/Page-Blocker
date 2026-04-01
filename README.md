@@ -1,5 +1,7 @@
 # URL Blocker - Browser Extension
 
+![GitHub title image](GitHub-Title-image.png)
+
 A powerful Chromium-based browser extension that blocks URLs matching patterns from local and cloud-based block lists.
 
 ## Features
